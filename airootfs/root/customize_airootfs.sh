@@ -2,7 +2,7 @@
 set -e
 
 hostname="archiso"
-echo $hostname > /etc/hostname
+echo "${hostname}" > /etc/hostname
 
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen

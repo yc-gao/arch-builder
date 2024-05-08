@@ -1,6 +1,5 @@
 # hardware
 edk2-shell
-syslinux
 efibootmgr
 amd-ucode
 intel-ucode
@@ -11,11 +10,8 @@ base
 base-devel
 linux-lts
 linux-firmware
-pv
-nbd
 mkinitcpio
 mkinitcpio-archiso
-mkinitcpio-nfs-utils
 
 # network
 networkmanager
