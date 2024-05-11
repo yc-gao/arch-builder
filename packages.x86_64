@@ -1,5 +1,6 @@
 # hardware
 edk2-shell
+syslinux
 efibootmgr
 amd-ucode
 intel-ucode
