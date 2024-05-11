@@ -16,7 +16,6 @@ mkinitcpio-archiso
 # network
 networkmanager
 iproute2
-openssh
 
 # video
 nvidia-lts
