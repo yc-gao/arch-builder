@@ -20,6 +20,11 @@ jobs:
           pacman-key --populate
           pacman -Syu --noconfirm
           pacman -S --noconfirm base-devel archiso git
+
+          git clone https://github.com/xundaoxd/dotfiles.git
+          mkdir -p airootfs/home/xundaoxd
+          cp -r -t airootfs/home/xundaoxd/ dotfiles/homefs/.config dotfiles/homefs/.ssh dotfiles/homefs/Pictures
+
           mkdir -p work out
           mkarchiso -v -w work_dir -o out_dir .
           rm -rf work

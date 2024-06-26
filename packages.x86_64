@@ -37,6 +37,8 @@ xdotool
 xss-lock
 i3lock
 bspwm
+notification-daemon
+libnotify
 sxhkd
 alacritty
 polybar
