@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - development
+      - yinchao/dev
 
 jobs:
   build:
