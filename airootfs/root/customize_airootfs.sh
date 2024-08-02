@@ -5,7 +5,8 @@ sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist
 pacman-key --init
 pacman-key --populate
 
-systemctl enable NetworkManager
+systemctl enable systemd-networkd
+systemctl enable systemd-resolved
 systemctl enable sshd
 systemctl enable sddm
 
