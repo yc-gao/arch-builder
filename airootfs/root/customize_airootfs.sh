@@ -6,7 +6,6 @@ pacman-key --init
 pacman-key --populate
 
 systemctl enable systemd-networkd
-systemctl enable systemd-resolved
 systemctl enable sshd
 systemctl enable sddm
 
