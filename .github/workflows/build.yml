@@ -19,7 +19,7 @@ jobs:
           pacman-key --init
           pacman-key --populate
           pacman -Syu --noconfirm
-          pacman -S --noconfirm base-devel archiso git
+          pacman -S --noconfirm base-devel archiso git grub
 
           git clone https://github.com/xundaoxd/dotfiles.git
           mkdir -p airootfs/home/xundaoxd
