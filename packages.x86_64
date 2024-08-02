@@ -1,4 +1,5 @@
 syslinux
+grub
 memtest86+
 mkinitcpio-archiso
 arch-install-scripts
