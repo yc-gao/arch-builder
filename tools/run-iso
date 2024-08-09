@@ -4,6 +4,7 @@ set -e
 main() {
     local iso="$1"
     qemu-system-x86_64 \
+        -m 4G \
         -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
         -drive file="${iso}",format=raw,media=cdrom
 }
