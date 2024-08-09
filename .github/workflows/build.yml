@@ -16,19 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build ISO
         run: |
-          pacman-key --init
-          pacman-key --populate
-          pacman -Syu --noconfirm
-          pacman -S --noconfirm base-devel archiso git grub
-
-          git clone https://github.com/xundaoxd/dotfiles.git
-          mkdir -p airootfs/home/xundaoxd
-          cp -r -t airootfs/home/xundaoxd/ dotfiles/homefs/.config dotfiles/homefs/.ssh dotfiles/homefs/Pictures
-
-          mkdir -p work out
-          mkarchiso -v -w work_dir -o out_dir .
-          rm -rf work
-          md5sum out_dir/*
+          echo 123
       - uses: actions/upload-artifact@v4
         with:
           name: archiso

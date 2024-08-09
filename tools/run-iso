@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+main() {
+    local iso="$1"
+    qemu-system-x86_64 \
+        -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
+        -drive file="${iso}",if=virtio,media=cdrom
+}
+
+main "$@"

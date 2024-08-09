@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -e
+
+opt_package_conf="pacman.conf"
+opt_package_lst="packages.x86_64"
+
+work_dir="work_dir"
+root_dir="${work_dir}/rootfs"
+esp_dir="${work_dir}/esp"
+iso_dir="${work_dir}/iso"
+
+prepare_rootfs() {
+    mkdir -p "${root_dir}"
+    cp -af --no-preserve=ownership,mode -T airootfs "${root_dir}"
+    local -a package_lst
+    mapfile -t package_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${opt_package_lst}")
+
+    pacstrap -C "${opt_package_conf}" -c -G -M -- work_dir/airootfs "${package_lst[@]}"
+}
+
+prepare_grub() {
+    mkdir -p "${esp_dir}/EFI/BOOT"
+    local grubmodules=(all_video at_keyboard boot btrfs cat chain configfile echo efifwsetup efinet exfat ext2 f2fs fat font \
+                 gfxmenu gfxterm gzio halt hfsplus iso9660 jpeg keylayouts linux loadenv loopback lsefi lsefimmap \
+                 minicmd normal ntfs ntfscomp part_apple part_gpt part_msdos png read reboot regexp search \
+                 search_fs_file search_fs_uuid search_label serial sleep tpm udf usb usbserial_common usbserial_ftdi \
+                 usbserial_pl2303 usbserial_usbdebug video xfs zstd)
+    grub-mkstandalone -O x86_64-efi \
+        --modules="${grubmodules[*]}" \
+        -o "${esp_dir}/EFI/BOOT/BOOTx64.EFI" \
+        grub/grub.cfg
+}
+
+mk_iso() {
+    mkdir -p "${iso_dir}"
+    cp -af --no-preserve=ownership,mode -T "${esp_dir}" "${iso_dir}"
+    xorriso \
+        -as mkisofs \
+        -iso-level 3 \
+        -full-iso9660-filenames \
+        --output "${work_dir}/archlinux.iso" \
+        "${iso_dir}"
+}
+
+main() {
+    # prepare_rootfs
+    prepare_grub
+    mk_iso
+}
+
+main "$@"
+
