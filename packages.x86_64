@@ -19,6 +19,7 @@ xf86-video-vesa
 # network
 networkmanager
 openssh
+iproute2
 
 # fs
 btrfs-progs
@@ -30,29 +31,51 @@ xfsprogs
 ntfs-3g
 
 # desktop
+notification-daemon
+libnotify
 xorg
+xorg-xinit
 xorg-xrandr
-sddm
-xdotool
 xss-lock
 i3lock
 bspwm
-notification-daemon
-libnotify
 sxhkd
 alacritty
 polybar
+feh
 rofi
-ranger
 flameshot
+picom
+
+fcitx-im
+fcitx-googlepinyin
+fcitx-configtool
+man-db
+man-pages
+ffmpeg
+imagemagick
+vlc
+ranger
+ueberzug
+ffmpegthumbnailer
+imv
+xdotool
+xclip
+wget
+curl
+neovim
+unzip
+ripgrep-all
+ctags
+openbsd-netcat
+jq
+nmap
+rsync
+lsof
 
 # misc
 polkit
 sudo
 zsh
-iproute2
-
-firefox
-neovim
-curl
 git
+

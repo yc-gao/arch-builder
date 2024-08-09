@@ -15,4 +15,6 @@ useradd -m -s /bin/zsh demo
 usermod -aG wheel demo
 sed -E -i '/^#\s*%wheel.*NOPASSWD/{s/^#\s*//}' /etc/sudoers
 echo "demo:demo1234" | chpasswd
+su -c 'cp -r /root/demo/* $HOME/' demo
+rm -rf /root/demo
 
