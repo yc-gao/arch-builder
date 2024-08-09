@@ -5,6 +5,7 @@ opt_package_conf="pacman.conf"
 opt_package_lst="packages.x86_64"
 
 work_dir="work_dir"
+tmp_dir="${work_dir}/tmp"
 root_dir="${work_dir}/rootfs"
 esp_dir="${work_dir}/esp"
 iso_dir="${work_dir}/iso"
@@ -32,12 +33,21 @@ prepare_grub() {
 }
 
 mk_iso() {
+    mkdir -p "${tmp_dir}"
+    mkfs.fat -F 32 "${tmp_dir}/efibootimg.img"
+
     mkdir -p "${iso_dir}"
     cp -af --no-preserve=ownership,mode -T "${esp_dir}" "${iso_dir}"
     xorriso \
         -as mkisofs \
         -iso-level 3 \
-        -full-iso9660-filenames \
+        -full-iso9660-filenames
+        -joliet \
+        -joliet-long \
+        -rational-rock
+        -eltorito-boot \
+        -efi-boot boot/grub/efi.img \
+        -no-emul-boot \
         --output "${work_dir}/archlinux.iso" \
         "${iso_dir}"
 }
