@@ -115,7 +115,7 @@ archiso_mount_handler() {
     if [ "${copytoram}" = "y" ]; then
         msg ":: Mounting /run/archiso/copytoram (tmpfs) filesystem, size=${copytoram_size}"
         mount --mkdir -t tmpfs -o "size=${copytoram_size}",mode=0755 copytoram /run/archiso/copytoram
-        local img_fullname="${img##*/}"
+        local img_fullname="${fs_img##*/}"
         cp -T "${fs_img}" "/run/archiso/copytoram/${img_fullname}"
         fs_img="/run/archiso/copytoram/${img_fullname}"
     fi
