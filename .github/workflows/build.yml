@@ -19,7 +19,7 @@ jobs:
           pacman-key --init
           pacman-key --populate
           pacman -Syu --noconfirm
-          pacman -S --noconfirm libisoburn dosfstools mtools arch-install-scripts erofs-utils
+          pacman -S --noconfirm grub libisoburn dosfstools mtools arch-install-scripts erofs-utils
           ./tools/build -o archlinux.iso
       - uses: actions/upload-artifact@v4
         with:
