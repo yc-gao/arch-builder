@@ -80,6 +80,14 @@ archiso_mount_handler() {
         launch_interactive_shell
     fi
 
+    if [ "${copytoram}" = "auto" ]; then
+        local fs_img_size="$(du -bsk "${fs_img}" | cut -f 1)"
+        if [ "$(awk '$1 == "MemAvailable:" { print $2 }' /proc/meminfo)" -gt $((fs_img_size + 2097152 + 256 * 1048576)) ]; then
+            copytoram='y'
+            copytoram_size="$((fs_img_size + 2097152))"
+        fi
+    fi
+
     if [ "${copytoram}" = "y" ]; then
         msg ":: Mounting /run/archiso/copytoram (tmpfs) filesystem, size=${copytoram_size}"
         mount --mkdir -t tmpfs -o "size=${copytoram_size}",mode=0755 copytoram /run/archiso/copytoram
