@@ -6,6 +6,9 @@ opt_pkg="packages.x86_64"
 work_dir="work_dir"
 tmp_dir="${work_dir}/tmp"
 
+fs_uuid=
+fs_label=
+
 rootfs_dir="${work_dir}/rootfs"
 espfs_dir="${work_dir}/esp"
 isofs_dir="${work_dir}/iso"
@@ -25,6 +28,10 @@ make_rootfs() {
 make_esp() {
     rm -rf "${espfs_dir}"
 
+    mkdir -p "${tmp_dir}"
+    fs_uuid="$(uuidgen)"
+    sed "s|%ARCHISO_UUID%|${fs_uuid}|g" grub/grub.cfg >"${tmp_dir}/grub.cfg"
+
     mkdir -p "${espfs_dir}/EFI/BOOT"
         local grubmodules=(all_video at_keyboard boot btrfs cat chain configfile echo efifwsetup efinet exfat ext2 f2fs fat font \
                  gfxmenu gfxterm gzio halt hfsplus iso9660 jpeg keylayouts linux loadenv loopback lsefi lsefimmap \
@@ -35,7 +42,7 @@ make_esp() {
         --modules="${grubmodules[*]}" \
         --locales="en@quot" --themes="" \
         -o "${espfs_dir}/EFI/BOOT/BOOTx64.EFI" \
-        "boot/grub/grub.cfg=grub/grub.cfg"
+        "boot/grub/grub.cfg=${tmp_dir}/grub.cfg"
 }
 
 # https://wiki.syslinux.org/wiki/index.php?title=Isohybrid
@@ -45,6 +52,7 @@ make_iso() {
     # syslinux beg
     mkdir -p "${isofs_dir}/boot/syslinux/"
     install -m 0644 -- "${rootfs_dir}/usr/lib/syslinux/bios/"* "${isofs_dir}/boot/syslinux/"
+    : >"${isofs_dir}/boot/${fs_uuid}.uuid"
     # syslinux end
 
     # grub beg
