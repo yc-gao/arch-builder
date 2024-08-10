@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-opt_package_conf="pacman.conf"
-opt_package_lst="packages.x86_64"
+opt_pkg="packages.x86_64"
 
 work_dir="work_dir"
 tmp_dir="${work_dir}/tmp"
@@ -14,9 +13,9 @@ prepare_rootfs() {
     mkdir -p "${root_dir}"
     cp -af --no-preserve=ownership,mode -T airootfs "${root_dir}"
     local -a package_lst
-    mapfile -t package_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${opt_package_lst}")
+    mapfile -t pkg_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${opt_pkg}")
 
-    pacstrap -C "${opt_package_conf}" -c -G -M -- "${root_dir}" "${package_lst[@]}"
+    pacstrap -c -G -M "${root_dir}" "${pkg_lst[@]}"
 }
 
 prepare_esp() {
