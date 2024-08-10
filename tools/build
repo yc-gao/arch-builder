@@ -23,6 +23,15 @@ make_rootfs() {
     mapfile -t pkg_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${opt_pkg}")
 
     pacstrap -c -G -M "${rootfs_dir}" "${pkg_lst[@]}"
+
+    if [[ -e "${rootfs_dir}/root/customize_airootfs.sh" ]]; then
+        echo "Running customize_airootfs.sh in '${rootfs_dir}' chroot..."
+        chmod -f -- +x "${rootfs_dir}/root/customize_airootfs.sh"
+        # Unset TMPDIR to work around https://bugs.archlinux.org/task/70580
+        eval -- env -u TMPDIR arch-chroot "${rootfs_dir}" "/root/customize_airootfs.sh"
+        rm -- "${rootfs_dir}/root/customize_airootfs.sh"
+        echo "Done! customize_airootfs.sh run successfully."
+    fi
 }
 
 make_esp() {
@@ -98,7 +107,23 @@ make_iso() {
 }
 
 main() {
-    # make_rootfs
+    while (($#)); do
+        case "$1" in
+            -w)
+                opt_work="$2"
+                shift 2
+                ;;
+            -o)
+                opt_output="$2"
+                shift 2
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+
+    make_rootfs
     make_esp
     make_iso
 }
