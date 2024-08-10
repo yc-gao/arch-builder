@@ -1,6 +1,7 @@
 syslinux
 grub
 memtest86+
+pv
 arch-install-scripts
 
 base

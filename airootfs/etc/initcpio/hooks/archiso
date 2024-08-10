@@ -14,41 +14,6 @@ _mnt_overlayfs() {
         airootfs "${newroot}"
 }
 
-# args: /path/to/image_file, mountpoint
-_mnt_fs() {
-    local img="${1}"
-    local mnt="${2}"
-    local img_fullname="${img##*/}"
-    local img_loopdev
-
-    # shellcheck disable=SC2154
-    # defined via initcpio's parse_cmdline()
-    if [ "${copytoram}" = "y" ]; then
-        msg -n ":: Copying rootfs image to RAM..."
-
-        # in case we have pv use it to display copy progress feedback otherwise
-        # fallback to using plain cp
-        if command -v pv >/dev/null 2>&1; then
-            echo ""
-            (pv "${img}" >"/run/archiso/copytoram/${img_fullname}")
-            local rc=$?
-        else
-            (cp -- "${img}" "/run/archiso/copytoram/${img_fullname}")
-            local rc=$?
-        fi
-
-        if [ "$rc" != 0 ]; then
-            echo "ERROR: while copy '${img}' to '/run/archiso/copytoram/${img_fullname}'"
-            launch_interactive_shell
-        fi
-
-        img="/run/archiso/copytoram/${img_fullname}"
-        msg "done."
-    fi
-    img_loopdev="$(losetup --find --show --read-only -- "${img}")"
-    _mnt_dev "${img_loopdev}" "${mnt}" "-r" "defaults"
-}
-
 # args: device, mountpoint, flags, opts
 _mnt_dev() {
     local dev="${1}"
@@ -99,6 +64,9 @@ run_hook() {
 # args: /path/to/newroot
 archiso_mount_handler() {
     local newroot="${1}"
+    local fs_img
+    local img_fullname
+    local img_loopdev
 
     if mountpoint -q "/run/archiso/bootmnt"; then
         echo "ERROR: can't mount root on /run/archiso/bootmnt"
@@ -106,7 +74,7 @@ archiso_mount_handler() {
     fi
     _mnt_dev "${archisodevice}" "/run/archiso/bootmnt" "-r" "defaults"
 
-    local fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
+    fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
     if [ ! -f "${fs_img}" ]; then
         echo "ERROR: no root file system image found"
         launch_interactive_shell
@@ -115,16 +83,22 @@ archiso_mount_handler() {
     if [ "${copytoram}" = "y" ]; then
         msg ":: Mounting /run/archiso/copytoram (tmpfs) filesystem, size=${copytoram_size}"
         mount --mkdir -t tmpfs -o "size=${copytoram_size}",mode=0755 copytoram /run/archiso/copytoram
-        local img_fullname="${fs_img##*/}"
-        cp -T "${fs_img}" "/run/archiso/copytoram/${img_fullname}"
-        fs_img="/run/archiso/copytoram/${img_fullname}"
+        img_fullname="${fs_img##*/}"
+        if command -v pv >/dev/null 2>&1; then
+            pv "${fs_img}" >"/run/archiso/copytoram/${img_fullname}"
+        else
+            cp "${fs_img}" "/run/archiso/copytoram/${img_fullname}"
+        fi
+        img_loopdev="$(losetup --find --show --read-only -- "/run/archiso/copytoram/${img_fullname}")"
+    else
+        img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
     fi
 
     msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
     mount --mkdir -t tmpfs -o "size=${cow_spacesize}",mode=0755 cowspace /run/archiso/cowspace
     mkdir -p "/run/archiso/cowspace/${cow_directory}"/{upperdir,workdir}
 
-    _mnt_fs "${fs_img}" "/run/archiso/airootfs"
+    _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"
     _mnt_overlayfs \
         "/run/archiso/airootfs" \
         "/run/archiso/cowspace/${cow_directory}/upperdir" \
