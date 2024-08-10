@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-opt_pkg="packages.x86_64"
+opt_output=
+opt_work="workdir"
 
-work_dir="work_dir"
-tmp_dir="${work_dir}/tmp"
+pkg_conf="packages.x86_64"
 
 fs_uuid=
 fs_label="archiso_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
 
-rootfs_dir="${work_dir}/rootfs"
-espfs_dir="${work_dir}/esp"
-isofs_dir="${work_dir}/iso"
+tmp_dir="${opt_work}/tmp"
+
+rootfs_dir="${opt_work}/rootfs"
+espfs_dir="${opt_work}/esp"
+isofs_dir="${opt_work}/iso"
 
 make_rootfs() {
     rm -rf "${rootfs_dir}"
@@ -19,8 +21,8 @@ make_rootfs() {
 
     cp -af --no-preserve=ownership,mode -T -- airootfs "${rootfs_dir}"
 
-    local -a package_lst
-    mapfile -t pkg_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${opt_pkg}")
+    local -a pkg_lst
+    mapfile -t pkg_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${pkg_conf}")
 
     pacstrap -c -G -M "${rootfs_dir}" "${pkg_lst[@]}"
 
@@ -87,6 +89,7 @@ make_iso() {
         "${image_path}" "${rootfs_dir}"
     # airootfs end
 
+    mkdir -p "$(dirname ${opt_output})"
     xorriso \
         -no_rc -as mkisofs \
         -iso-level 3 -full-iso9660-filenames \
@@ -102,7 +105,7 @@ make_iso() {
         -e --interval:appended_partition_2:all:: \
         -no-emul-boot \
         -isohybrid-gpt-basdat \
-        -o "${work_dir}/linux.iso" \
+        -o "${opt_output}" \
         "${isofs_dir}"
 }
 
@@ -122,6 +125,12 @@ main() {
                 ;;
         esac
     done
+
+    tmp_dir="${opt_work}/tmp"
+
+    rootfs_dir="${opt_work}/rootfs"
+    espfs_dir="${opt_work}/esp"
+    isofs_dir="${opt_work}/iso"
 
     make_rootfs
     make_esp
