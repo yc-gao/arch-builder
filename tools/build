@@ -7,7 +7,7 @@ work_dir="work_dir"
 tmp_dir="${work_dir}/tmp"
 
 fs_uuid=
-fs_label=
+fs_label="archiso_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
 
 rootfs_dir="${work_dir}/rootfs"
 espfs_dir="${work_dir}/esp"
@@ -30,7 +30,8 @@ make_esp() {
 
     mkdir -p "${tmp_dir}"
     fs_uuid="$(uuidgen)"
-    sed "s|%ARCHISO_UUID%|${fs_uuid}|g" grub/grub.cfg >"${tmp_dir}/grub.cfg"
+    sed "s|%ARCHISO_UUID%|${fs_uuid}|g;
+         s|%ARCHISO_LABEL%|${fs_label}|g" grub/grub.cfg >"${tmp_dir}/grub.cfg"
 
     mkdir -p "${espfs_dir}/EFI/BOOT"
         local grubmodules=(all_video at_keyboard boot btrfs cat chain configfile echo efifwsetup efinet exfat ext2 f2fs fat font \
@@ -81,6 +82,7 @@ make_iso() {
         -no_rc -as mkisofs \
         -iso-level 3 -full-iso9660-filenames \
         -joliet -joliet-long -rational-rock \
+        -volid "${fs_label}" \
         -isohybrid-mbr "${isofs_dir}/boot/syslinux//isohdpfx.bin" \
         --mbr-force-bootable -partition_offset 16 \
         -eltorito-boot boot/syslinux/isolinux.bin \
