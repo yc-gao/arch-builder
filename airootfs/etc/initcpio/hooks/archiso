@@ -89,15 +89,14 @@ archiso_mount_handler() {
         else
             cp "${fs_img}" "/run/archiso/copytoram/${img_fullname}"
         fi
-        img_loopdev="$(losetup --find --show --read-only -- "/run/archiso/copytoram/${img_fullname}")"
-    else
-        img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
+        fs_img="/run/archiso/copytoram/${img_fullname}"
     fi
 
     msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
     mount --mkdir -t tmpfs -o "size=${cow_spacesize}",mode=0755 cowspace /run/archiso/cowspace
     mkdir -p "/run/archiso/cowspace/${cow_directory}"/{upperdir,workdir}
 
+    img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
     _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"
     _mnt_overlayfs \
         "/run/archiso/airootfs" \
@@ -106,4 +105,3 @@ archiso_mount_handler() {
         "${newroot}"
 }
 
-# vim: set ft=sh:
