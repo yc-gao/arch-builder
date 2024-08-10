@@ -17,9 +17,9 @@ jobs:
       - name: Build ISO
         run: |
           pacman -S --noconfirm libisoburn dosfstools mtools arch-install-scripts erofs-utils
-          ./tools/build -o out_dir/archlinux.iso
+          ./tools/build -o archlinux.iso
       - uses: actions/upload-artifact@v4
         with:
           name: archiso
-          path: out_dir/
+          path: archlinux.iso
 
