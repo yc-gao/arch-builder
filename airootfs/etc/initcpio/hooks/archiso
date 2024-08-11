@@ -50,7 +50,6 @@ run_hook() {
     [ -z "${archisodevice}" ] && archisodevice="/dev/disk/by-label/${archisolabel}"
 
     [ -z "${copytoram}" ] && copytoram="n"
-    [ -z "${copytoram_size}" ] && copytoram_size="75%"
 
     # cow_device
     [ -z "${cow_spacesize}" ] && cow_spacesize="256M"
@@ -68,6 +67,7 @@ archiso_mount_handler() {
     local fs_img
     local img_fullname
     local img_loopdev
+    local fs_img_size
 
     if mountpoint -q "/run/archiso/bootmnt"; then
         echo "ERROR: can't mount root on /run/archiso/bootmnt"
@@ -80,16 +80,15 @@ archiso_mount_handler() {
         echo "ERROR: no root file system image found"
         launch_interactive_shell
     fi
+    fs_img_size="$(du -bsk "${fs_img}" | cut -f 1)"
 
-    if [ "${copytoram}" = "auto" ]; then
-        local fs_img_size="$(du -bsk "${fs_img}" | cut -f 1)"
-        if [ "$(awk '$1 == "MemAvailable:" { print $2 }' /proc/meminfo)" -gt $((fs_img_size + 2 * 1024 * 1024 + 256 * 1024 * 1024)) ]; then
-            copytoram='y'
-            copytoram_size="$((fs_img_size + 2 * 1024 * 1024))"
-        fi
+    if [ "${copytoram}" = "auto" ] \
+        && [ "$(awk '$1 == "MemAvailable:" { print $2 }' /proc/meminfo)" -gt $((fs_img_size + 2 * 1024 * 1024 + 256 * 1024 * 1024)) ]; then
+        copytoram='y'
     fi
 
     if [ "${copytoram}" = "y" ]; then
+        local copytoram_size="$((fs_img_size + 2 * 1024 * 1024))"
         msg ":: Mounting /run/archiso/copytoram (tmpfs) filesystem, size=${copytoram_size}"
         mount --mkdir -t tmpfs -o "size=${copytoram_size}",mode=0755 copytoram /run/archiso/copytoram
         img_fullname="${fs_img##*/}"
