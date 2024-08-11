@@ -5,8 +5,8 @@ main() {
     local iso="$1"
     qemu-system-x86_64 \
         -accel kvm \
-        -m 32G \
         -smp 8 \
+        -m 32G \
         -nic user,hostfwd=tcp::60022-:22 \
         -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
         -drive file="${iso}",format=raw,media=cdrom
