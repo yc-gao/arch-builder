@@ -52,6 +52,7 @@ run_hook() {
     [ -z "${copytoram}" ] && copytoram="n"
     [ -z "${copytoram_size}" ] && copytoram_size="75%"
 
+    # cow_device
     [ -z "${cow_spacesize}" ] && cow_spacesize="256M"
     [ -z "${cow_directory}" ] && cow_directory="persistent_${archisolabel}"
 
@@ -82,9 +83,9 @@ archiso_mount_handler() {
 
     if [ "${copytoram}" = "auto" ]; then
         local fs_img_size="$(du -bsk "${fs_img}" | cut -f 1)"
-        if [ "$(awk '$1 == "MemAvailable:" { print $2 }' /proc/meminfo)" -gt $((fs_img_size + 2097152 + 256 * 1048576)) ]; then
+        if [ "$(awk '$1 == "MemAvailable:" { print $2 }' /proc/meminfo)" -gt $((fs_img_size + 2 * 1024 * 1024 + 256 * 1024 * 1024)) ]; then
             copytoram='y'
-            copytoram_size="$((fs_img_size + 2097152))"
+            copytoram_size="$((fs_img_size + 2 * 1024 * 1024))"
         fi
     fi
 
@@ -100,8 +101,13 @@ archiso_mount_handler() {
         fs_img="/run/archiso/copytoram/${img_fullname}"
     fi
 
-    msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
-    mount --mkdir -t tmpfs -o "size=${cow_spacesize}",mode=0755 cowspace /run/archiso/cowspace
+    if [ -n "${cow_device}" ]; then
+        msg ":: Mounting /run/archiso/cowspace (${cow_device}) filesystem..."
+        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults,mode=0755"
+    else
+        msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
+        mount --mkdir -t tmpfs -o "size=${cow_spacesize}",mode=0755 cowspace /run/archiso/cowspace
+    fi
     mkdir -p "/run/archiso/cowspace/${cow_directory}"/{upperdir,workdir}
 
     img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
