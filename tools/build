@@ -80,7 +80,6 @@ EOF
 make_iso() {
     rm -rf "${isofs_dir}"
 
-
     mkdir -p "${isofs_dir}/boot/"
     : >"${isofs_dir}/boot/${fs_uuid}.uuid"
 
