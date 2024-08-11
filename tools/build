@@ -41,8 +41,27 @@ make_esp() {
 
     mkdir -p "${tmp_dir}"
     fs_uuid="$(uuidgen)"
-    sed "s|%ARCHISO_UUID%|${fs_uuid}|g;
-         s|%ARCHISO_LABEL%|${fs_label}|g" grub/grub.cfg >"${tmp_dir}/grub.cfg"
+
+    IFS='' read -r -d '' grubembedcfg <<'EOF' || true
+insmod part_gpt
+insmod part_msdos
+insmod iso9660
+
+insmod ext2
+insmod exfat
+insmod fat
+
+if search --no-floppy --set=archiso_device --file '/boot/%ARCHISO_UUID%.uuid'; then
+    set root="${archiso_device}"
+    configfile "(${archiso_device})/boot/grub/grub.cfg"
+else
+    echo "Could not find a volume with a '/boot/%ARCHISO_UUID%.uuid' file on it!"
+fi
+
+EOF
+    echo "${grubembedcfg}" \
+        | sed "s|%ARCHISO_UUID%|${fs_uuid}|g" \
+        >"${tmp_dir}/grub.cfg"
 
     mkdir -p "${espfs_dir}/EFI/BOOT"
         local grubmodules=(all_video at_keyboard boot btrfs cat chain configfile echo efifwsetup efinet exfat ext2 f2fs fat font \
@@ -61,13 +80,28 @@ make_esp() {
 make_iso() {
     rm -rf "${isofs_dir}"
 
+
+    mkdir -p "${isofs_dir}/boot/"
+    : >"${isofs_dir}/boot/${fs_uuid}.uuid"
+
     # syslinux beg
     mkdir -p "${isofs_dir}/boot/syslinux/"
     install -m 0644 -- "${rootfs_dir}/usr/lib/syslinux/bios/"* "${isofs_dir}/boot/syslinux/"
-    : >"${isofs_dir}/boot/${fs_uuid}.uuid"
+    for _cfg in "boot/syslinux/"*.cfg; do
+        sed "s|%ARCHISO_LABEL%|${fs_label}|g" \
+            "${_cfg}" \
+        >"${isofs_dir}/boot/syslinux/${_cfg##*/}"
+    done
     # syslinux end
 
     # grub beg
+    mkdir -p "${isofs_dir}/boot/grub"
+    for _cfg in "boot/grub/"*.cfg; do
+        sed "s|%ARCHISO_LABEL%|${fs_label}|g" \
+            "${_cfg}" \
+        >"${isofs_dir}/boot/grub/${_cfg##*/}"
+    done
+
     mkdir -p "${tmp_dir}"
     local efibootimg="${tmp_dir}/efiboot.img"
     rm -rf "${efibootimg}"
