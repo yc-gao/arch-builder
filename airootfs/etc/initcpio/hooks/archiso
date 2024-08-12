@@ -47,9 +47,10 @@ _mnt_dev() {
 }
 
 run_hook() {
+    # archisolabel
     [ -z "${archisodevice}" ] && archisodevice="/dev/disk/by-label/${archisolabel}"
 
-    [ -z "${copytoram}" ] && copytoram="n"
+    [ -z "${copytoram}" ] && copytoram="auto"
 
     # cow_device
     [ -z "${cow_spacesize}" ] && cow_spacesize="256M"
