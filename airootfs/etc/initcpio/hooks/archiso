@@ -8,7 +8,6 @@ _mnt_overlayfs() {
     local upperdir="${2}"
     local workdir="${3}"
     local newroot="${4}"
-    mkdir -p "/run/archiso/cowspace/${cow_directory}/upperdir" "/run/archiso/cowspace/${cow_directory}/workdir"
     mount -t overlay -o \
         "lowerdir=${src},upperdir=${upperdir},workdir=${workdir}" \
         airootfs "${newroot}"
