@@ -47,7 +47,7 @@ _mnt_dev() {
 
 run_hook() {
     # archisolabel
-    [ -z "${archisodevice}" ] && archisodevice="/dev/disk/by-label/${archisolabel}"
+    [ -z "${archiso_device}" ] && archiso_device="/dev/disk/by-label/${archiso_label}"
 
     [ -z "${copytoram}" ] && copytoram="auto"
 
@@ -73,7 +73,7 @@ archiso_mount_handler() {
         echo "ERROR: can't mount root on /run/archiso/bootmnt"
         launch_interactive_shell
     fi
-    _mnt_dev "${archisodevice}" "/run/archiso/bootmnt" "-r" "defaults"
+    _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults"
 
     fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
     if [ ! -f "${fs_img}" ]; then
