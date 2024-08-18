@@ -51,7 +51,8 @@ run_hook() {
 
     [ -z "${copytoram}" ] && copytoram="auto"
 
-    # cow_device
+    # cow_label
+    [ -z "${cow_device}" -a -n "${cow_label}" ] && cow_device="/dev/disk/by-label/${cow_label}"
     [ -z "${cow_spacesize}" ] && cow_spacesize="256M"
     [ -z "${cow_directory}" ] && cow_directory="persistent_${archisolabel}"
 
@@ -100,7 +101,7 @@ archiso_mount_handler() {
         fs_img="/run/archiso/copytoram/${img_fullname}"
     fi
 
-    if [ -n "${cow_device}" ]; then
+    if [ -e "${cow_device}" ]; then
         msg ":: Mounting /run/archiso/cowspace (${cow_device}) filesystem..."
         _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults,mode=0755"
     else
