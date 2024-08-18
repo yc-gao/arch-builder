@@ -46,7 +46,7 @@ _mnt_dev() {
 }
 
 run_hook() {
-    # archisolabel
+    # archiso_label
     [ -z "${archiso_device}" ] && archiso_device="/dev/disk/by-label/${archiso_label}"
 
     [ -z "${copytoram}" ] && copytoram="auto"
