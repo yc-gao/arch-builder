@@ -35,7 +35,7 @@ _mnt_dev() {
         'UUID='* | 'LABEL='* | 'PARTUUID='* | 'PARTLABEL='*) : ;;
         *) dev="${resolved_dev}" ;;
     esac
-    if mount --mkdir -o "${opts}" "${flg}" "${dev}" "${mnt}"; then
+    if mount --mkdir -o "${opts}" ${flg} "${dev}" "${mnt}"; then
         msg ":: Device '${dev}' mounted successfully."
     else
         echo "ERROR; Failed to mount '${dev}'"
@@ -54,7 +54,6 @@ run_hook() {
     # cow_label
     [ -z "${cow_device}" -a -n "${cow_label}" ] && cow_device="/dev/disk/by-label/${cow_label}"
     [ -z "${cow_spacesize}" ] && cow_spacesize="256M"
-    [ -z "${cow_directory}" ] && cow_directory="persistent_${archisolabel}"
 
     # set mount handler for archiso
     export mount_handler="archiso_mount_handler"
@@ -103,19 +102,19 @@ archiso_mount_handler() {
 
     if [ -e "${cow_device}" ]; then
         msg ":: Mounting /run/archiso/cowspace (${cow_device}) filesystem..."
-        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults,mode=0755"
+        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"
     else
         msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
         mount --mkdir -t tmpfs -o "size=${cow_spacesize}",mode=0755 cowspace /run/archiso/cowspace
     fi
-    mkdir -p "/run/archiso/cowspace/${cow_directory}"/{upperdir,workdir}
+    mkdir -p /run/archiso/cowspace/upperdir /run/archiso/cowspace/workdir
 
     img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
     _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"
     _mnt_overlayfs \
         "/run/archiso/airootfs" \
-        "/run/archiso/cowspace/${cow_directory}/upperdir" \
-        "/run/archiso/cowspace/${cow_directory}/workdir" \
+        "/run/archiso/cowspace/upperdir" \
+        "/run/archiso/cowspace/workdir" \
         "${newroot}"
 }
 
