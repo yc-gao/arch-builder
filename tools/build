@@ -128,7 +128,7 @@ make_iso() {
         -iso-level 3 -full-iso9660-filenames \
         -joliet -joliet-long -rational-rock \
         -volid "${fs_label}" \
-        -isohybrid-mbr "${isofs_dir}/boot/syslinux//isohdpfx.bin" \
+        -isohybrid-mbr "${isofs_dir}/boot/syslinux/isohdpfx.bin" \
         --mbr-force-bootable -partition_offset 16 \
         -eltorito-boot boot/syslinux/isolinux.bin \
         -eltorito-catalog boot/syslinux/boot.cat \
