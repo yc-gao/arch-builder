@@ -24,7 +24,7 @@ make_rootfs() {
     local -a pkg_lst
     mapfile -t pkg_lst < <(sed '/^[[:blank:]]*#.*/d;s/#.*//;/^[[:blank:]]*$/d' "${pkg_conf}")
 
-    pacstrap -c -G -M "${rootfs_dir}" "${pkg_lst[@]}"
+    pacstrap -C pacman.conf -c -G -M "${rootfs_dir}" "${pkg_lst[@]}"
 
     if [[ -e "${rootfs_dir}/root/customize_airootfs.sh" ]]; then
         echo "Running customize_airootfs.sh in '${rootfs_dir}' chroot..."
