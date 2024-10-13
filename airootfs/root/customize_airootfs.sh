@@ -9,6 +9,7 @@ echo "${opt_user}:${opt_password}" | chpasswd
 usermod -aG wheel "${opt_user}"
 sed -E -i 's/#\s*(%wheel\s+ALL=\(ALL:ALL\)\s+ALL)/\1/' /etc/sudoers
 
+mv "/home/demo" "/home/${opt_user}"
 chown -Rh "${opt_user}:${opt_user}" "/home/${opt_user}"
 chmod 755 "/home/${opt_user}/.config/bspwm/bspwmrc"
 chmod 755 "/home/${opt_user}/.config/ranger/scope.sh"
