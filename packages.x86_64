@@ -31,6 +31,12 @@ e2fsprogs
 xfsprogs
 ntfs-3g
 
+# misc
+polkit
+sudo
+zsh
+git
+
 # desktop
 notification-daemon
 libnotify
@@ -73,10 +79,4 @@ jq
 nmap
 rsync
 lsof
-
-# misc
-polkit
-sudo
-zsh
-git
 
