@@ -1,12 +1,12 @@
 #!/bin/sh
 
-opt_user="demo"
-opt_password="demo1234"
+opt_user="${USERNAME:-demo}"
+opt_password="${PASSWORD:-demo1234}"
 
-useradd -m -s /bin/zsh demo
+useradd -m -s /bin/zsh "${opt_user}"
 echo "${opt_user}:${opt_password}" | chpasswd
 
-usermod -aG wheel "demo"
+usermod -aG wheel "${opt_user}"
 sed -E -i 's/#\s*(%wheel\s+ALL=\(ALL:ALL\)\s+ALL)/\1/' /etc/sudoers
 
 chown -Rh "${opt_user}:${opt_user}" "/home/${opt_user}"
