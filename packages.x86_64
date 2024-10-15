@@ -30,6 +30,7 @@ f2fs-tools
 e2fsprogs
 xfsprogs
 ntfs-3g
+lvm2
 
 # misc
 polkit
