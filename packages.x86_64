@@ -40,3 +40,10 @@ sudo
 zsh
 git
 
+# administration tool
+cockpit
+cockpit-machines
+cockpit-podman
+cockpit-storaged
+cockpit-packagekit
+firewalld
