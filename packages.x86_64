@@ -32,6 +32,7 @@ xfsprogs
 ntfs-3g
 lvm2
 mdadm
+udisk2
 
 # misc
 polkit
