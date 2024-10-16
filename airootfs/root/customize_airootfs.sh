@@ -11,5 +11,8 @@ pacman-key --populate
 
 systemctl enable NetworkManager
 systemctl enable sshd
+
+systemctl enable libvirtd.service
 systemctl enable cockpit.socket
+sed -i '/root/d' /etc/cockpit/disallowed-users
 

@@ -47,3 +47,4 @@ cockpit-podman
 cockpit-storaged
 cockpit-packagekit
 firewalld
+virt-install
