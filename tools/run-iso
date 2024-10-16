@@ -7,7 +7,7 @@ main() {
         -accel kvm \
         -smp 8 \
         -m 32G \
-        -nic user,hostfwd=tcp::60022-:22 \
+        -nic user,hostfwd=tcp::9090-:9090,hostfwd=tcp::9022-:22 \
         -nic user \
         -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2-ovmf/x64/OVMF_CODE.fd \
         -drive file="${iso}",format=raw,media=cdrom
