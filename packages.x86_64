@@ -48,3 +48,4 @@ cockpit-storaged
 cockpit-packagekit
 firewalld
 virt-install
+neovim
