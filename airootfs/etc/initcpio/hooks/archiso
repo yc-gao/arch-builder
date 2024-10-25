@@ -2,7 +2,23 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# args: source, newroot, mountpoint
+_resolve_dev() {
+    local device="${1}"
+    local delay="${2:-5}"
+
+    case "${device}" in
+        'UUID='* | 'LABEL='* | 'PARTUUID='* | 'PARTLABEL='*)
+            device="$(blkid -lt "${device}" -o device)"
+            ;;
+    esac
+    if poll_device "${device}" "${delay}"; then
+        # printf "${device}"
+        return 0
+    fi
+    return 1
+}
+
+# args: source, upperdir, workdir, newroot
 _mnt_overlayfs() {
     local src="${1}"
     local upperdir="${2}"
@@ -19,40 +35,33 @@ _mnt_dev() {
     local mnt="${2}"
     local flg="${3}"
     local opts="${4}"
-    local resolved_dev
 
     msg ":: Mounting '${dev}' to '${mnt}'"
 
-    while ! resolved_dev="$(rootdelay="${rootdelay:-30}" resolve_device "${dev}")"; do
+    if ! _resolve_dev "${dev}" "${rootdelay:-30}"; then
         echo "ERROR: '${dev}' device did not show up after ${rootdelay:-30} seconds..."
         echo "   Falling back to interactive prompt"
         echo "   You can try to fix the problem manually, log out when you are finished"
         launch_interactive_shell
-    done
+    fi
 
-    # If the tag is supported by mount, pass it as is. Otherwise, use the resolved device path.
-    case "${dev}" in
-        'UUID='* | 'LABEL='* | 'PARTUUID='* | 'PARTLABEL='*) : ;;
-        *) dev="${resolved_dev}" ;;
-    esac
-    if mount --mkdir -o "${opts}" ${flg} "${dev}" "${mnt}"; then
-        msg ":: Device '${dev}' mounted successfully."
-    else
+    if ! mount --mkdir -o "${opts}" ${flg} "${dev}" "${mnt}"; then
         echo "ERROR; Failed to mount '${dev}'"
         echo "   Falling back to interactive prompt"
         echo "   You can try to fix the problem manually, log out when you are finished"
         launch_interactive_shell
     fi
+
+    msg ":: Device '${dev}' mounted successfully."
 }
 
+# variables
+#   - archiso_device
+#   - copytoram
+#   - cow_device
+#   - cow_spacesize
 run_hook() {
-    # archiso_label
-    [ -z "${archiso_device}" ] && archiso_device="/dev/disk/by-label/${archiso_label}"
-
-    [ -z "${copytoram}" ] && copytoram="auto"
-
-    # cow_label
-    [ -z "${cow_device}" -a -n "${cow_label}" ] && cow_device="/dev/disk/by-label/${cow_label}"
+    [ -z "${copytoram}" ] && copytoram="y"
     [ -z "${cow_spacesize}" ] && cow_spacesize="256M"
 
     # set mount handler for archiso
@@ -64,34 +73,34 @@ run_hook() {
 # args: /path/to/newroot
 archiso_mount_handler() {
     local newroot="${1}"
-    local fs_img
-    local img_fullname
-    local img_loopdev
-    local fs_img_size
 
+    # mount cow
+    if _resolve_dev "${cow_device}" "3"; then
+        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"
+    else
+        msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
+        mount --mkdir -t tmpfs -o "size=${cow_spacesize},mode=0755" cowspace /run/archiso/cowspace
+    fi
+
+    # mount iso
     if mountpoint -q "/run/archiso/bootmnt"; then
         echo "ERROR: can't mount root on /run/archiso/bootmnt"
         launch_interactive_shell
     fi
     _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults"
 
-    fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
+    local fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
     if [ ! -f "${fs_img}" ]; then
         echo "ERROR: no root file system image found"
         launch_interactive_shell
     fi
-    fs_img_size="$(du -bsk "${fs_img}" | cut -f 1)"
-
-    if [ "${copytoram}" = "auto" ] \
-        && [ "$(awk '$1 == "MemAvailable:" { print $2 }' /proc/meminfo)" -gt $((fs_img_size + 2 * 1024 * 1024 + 256 * 1024 * 1024)) ]; then
-        copytoram='y'
-    fi
 
     if [ "${copytoram}" = "y" ]; then
+        local fs_img_size="$(du -bs "${fs_img}" | cut -f 1)"
         local copytoram_size="$((fs_img_size + 2 * 1024 * 1024))"
         msg ":: Mounting /run/archiso/copytoram (tmpfs) filesystem, size=${copytoram_size}"
-        mount --mkdir -t tmpfs -o "size=${copytoram_size}",mode=0755 copytoram /run/archiso/copytoram
-        img_fullname="${fs_img##*/}"
+        mount --mkdir -t tmpfs -o "size=${copytoram_size},mode=0755" copytoram /run/archiso/copytoram
+        local img_fullname="${fs_img##*/}"
         if command -v pv >/dev/null 2>&1; then
             pv "${fs_img}" >"/run/archiso/copytoram/${img_fullname}"
         else
@@ -100,17 +109,9 @@ archiso_mount_handler() {
         fs_img="/run/archiso/copytoram/${img_fullname}"
     fi
 
-    if [ -e "${cow_device}" ]; then
-        msg ":: Mounting /run/archiso/cowspace (${cow_device}) filesystem..."
-        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"
-    else
-        msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
-        mount --mkdir -t tmpfs -o "size=${cow_spacesize}",mode=0755 cowspace /run/archiso/cowspace
-    fi
-    mkdir -p /run/archiso/cowspace/upperdir /run/archiso/cowspace/workdir
-
-    img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
+    local img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
     _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"
+
     _mnt_overlayfs \
         "/run/archiso/airootfs" \
         "/run/archiso/cowspace/upperdir" \
