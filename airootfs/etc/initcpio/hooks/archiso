@@ -98,6 +98,7 @@ archiso_mount_handler() {
         else
             cp "${fs_img}" "/run/archiso/copytoram/${img_fullname}"
         fi
+        umount -d "/run/archiso/bootmnt"
         fs_img="/run/archiso/copytoram/${img_fullname}"
     fi
 
@@ -112,6 +113,7 @@ archiso_mount_handler() {
         mount --mkdir -t tmpfs -o "size=${cow_spacesize},mode=0755" cowspace /run/archiso/cowspace
     fi
 
+    mkdir -p "/run/archiso/cowspace/upperdir" "/run/archiso/cowspace/workdir"
     _mnt_overlayfs \
         "/run/archiso/airootfs" \
         "/run/archiso/cowspace/upperdir" \
