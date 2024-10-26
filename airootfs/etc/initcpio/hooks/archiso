@@ -74,14 +74,6 @@ run_hook() {
 archiso_mount_handler() {
     local newroot="${1}"
 
-    # mount cow
-    if _resolve_dev "${cow_device}" "3"; then
-        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"
-    else
-        msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
-        mount --mkdir -t tmpfs -o "size=${cow_spacesize},mode=0755" cowspace /run/archiso/cowspace
-    fi
-
     # mount iso
     if mountpoint -q "/run/archiso/bootmnt"; then
         echo "ERROR: can't mount root on /run/archiso/bootmnt"
@@ -111,6 +103,14 @@ archiso_mount_handler() {
 
     local img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
     _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"
+
+    # mount cow
+    if _resolve_dev "${cow_device}" "3"; then
+        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"
+    else
+        msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
+        mount --mkdir -t tmpfs -o "size=${cow_spacesize},mode=0755" cowspace /run/archiso/cowspace
+    fi
 
     _mnt_overlayfs \
         "/run/archiso/airootfs" \
