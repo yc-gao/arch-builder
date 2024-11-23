@@ -46,8 +46,7 @@ libnotify
 xorg
 xorg-xinit
 xorg-xrandr
-xss-lock
-i3lock
+sddm
 bspwm
 sxhkd
 alacritty
@@ -56,15 +55,17 @@ feh
 rofi
 flameshot
 picom
+xss-lock
+i3lock
 
 fcitx-im
 fcitx-googlepinyin
 fcitx-configtool
+firefox
 man-db
 man-pages
 ffmpeg
 imagemagick
-vlc
 ranger
 ueberzug
 ffmpegthumbnailer
