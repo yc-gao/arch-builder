@@ -25,6 +25,10 @@ _mnt_dev() {
     local opts="${4}"
 
     msg ":: Mounting '${dev}' to '${mnt}'"
+    if mountpoint -q "${mnt}"; then
+        error "ERROR: can't mount '${dev}' on '${mnt}'"
+        return 1
+    fi
     if ! _resolve_dev "${dev}" "${rootdelay:-30}"; then
         error "ERROR: '${device}' device did not show up after ${delay} seconds..."
         return 1
@@ -33,7 +37,6 @@ _mnt_dev() {
         error "ERROR: Failed to mount '${dev}'"
         return 1
     fi
-
     msg ":: Device '${dev}' mounted successfully."
     return 0
 }
@@ -57,12 +60,6 @@ run_hook() {
 archiso_mount_handler() {
     local newroot="${1}"
 
-    # mount iso
-    if mountpoint -q "/run/archiso/bootmnt"; then
-        error "ERROR: can't mount root on /run/archiso/bootmnt"
-        error "Falling back to interactive prompt"
-        launch_interactive_shell
-    fi
     if ! _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults"; then
         error "Falling back to interactive prompt"
         launch_interactive_shell
@@ -91,12 +88,13 @@ archiso_mount_handler() {
     fi
 
     local img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
-    _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"
+    if ! _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"; then
+        error "Falling back to interactive prompt"
+        launch_interactive_shell
+    fi
 
     # mount cow
-    if _resolve_dev "${cow_device}" "3"; then
-        _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"
-    else
+    if ! _mnt_dev "${cow_device}" "/run/archiso/cowspace" "" "defaults"; then
         msg ":: Mounting /run/archiso/cowspace (tmpfs) filesystem, size=${cow_spacesize}..."
         mount --mkdir -t tmpfs -o "size=${cow_spacesize},mode=0755" cowspace /run/archiso/cowspace
     fi
