@@ -102,7 +102,7 @@ archiso_mount_handler() {
     fi
 
     mkdir -p "/run/archiso/cowspace/upperdir" "/run/archiso/cowspace/workdir"
-    mount -t overlayfs \
+    mount -t overlay \
         -o "lowerdir=/run/archiso/airootfs,upperdir=/run/archiso/cowspace/upperdir,workdir=/run/archiso/cowspace/workdir" \
         airootfs "${newroot}"
 }
