@@ -11,25 +11,13 @@ _resolve_dev() {
             device="$(blkid -lt "${device}" -o device)"
             ;;
     esac
-    if poll_device "${device}" "${delay}"; then
-        # printf "${device}"
-        return 0
+    if ! poll_device "${device}" "${delay}"; then
+        return 1
     fi
-    return 1
+    return 0
 }
 
-# args: source, upperdir, workdir, newroot
-_mnt_overlayfs() {
-    local src="${1}"
-    local upperdir="${2}"
-    local workdir="${3}"
-    local newroot="${4}"
-    mount -t overlay -o \
-        "lowerdir=${src},upperdir=${upperdir},workdir=${workdir}" \
-        airootfs "${newroot}"
-}
-
-# args: device, mountpoint, flags, opts
+# args: device mountpoint flags opts
 _mnt_dev() {
     local dev="${1}"
     local mnt="${2}"
@@ -37,22 +25,17 @@ _mnt_dev() {
     local opts="${4}"
 
     msg ":: Mounting '${dev}' to '${mnt}'"
-
     if ! _resolve_dev "${dev}" "${rootdelay:-30}"; then
-        echo "ERROR: '${dev}' device did not show up after ${rootdelay:-30} seconds..."
-        echo "   Falling back to interactive prompt"
-        echo "   You can try to fix the problem manually, log out when you are finished"
-        launch_interactive_shell
+        error "ERROR: '${device}' device did not show up after ${delay} seconds..."
+        return 1
     fi
-
     if ! mount --mkdir -o "${opts}" ${flg} "${dev}" "${mnt}"; then
-        echo "ERROR; Failed to mount '${dev}'"
-        echo "   Falling back to interactive prompt"
-        echo "   You can try to fix the problem manually, log out when you are finished"
-        launch_interactive_shell
+        error "ERROR: Failed to mount '${dev}'"
+        return 1
     fi
 
     msg ":: Device '${dev}' mounted successfully."
+    return 0
 }
 
 # variables
@@ -76,14 +59,19 @@ archiso_mount_handler() {
 
     # mount iso
     if mountpoint -q "/run/archiso/bootmnt"; then
-        echo "ERROR: can't mount root on /run/archiso/bootmnt"
+        error "ERROR: can't mount root on /run/archiso/bootmnt"
+        error "Falling back to interactive prompt"
         launch_interactive_shell
     fi
-    _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults"
+    if ! _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults"; then
+        error "Falling back to interactive prompt"
+        launch_interactive_shell
+    fi
 
     local fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
     if [ ! -f "${fs_img}" ]; then
-        echo "ERROR: no root file system image found"
+        error "ERROR: no root file system image found"
+        error "Falling back to interactive prompt"
         launch_interactive_shell
     fi
 
@@ -114,10 +102,8 @@ archiso_mount_handler() {
     fi
 
     mkdir -p "/run/archiso/cowspace/upperdir" "/run/archiso/cowspace/workdir"
-    _mnt_overlayfs \
-        "/run/archiso/airootfs" \
-        "/run/archiso/cowspace/upperdir" \
-        "/run/archiso/cowspace/workdir" \
-        "${newroot}"
+    mount -t overlayfs \
+        -o "lowerdir=/run/archiso/airootfs,upperdir=/run/archiso/cowspace/upperdir,workdir=/run/archiso/cowspace/workdir" \
+        airootfs "${newroot}"
 }
 
