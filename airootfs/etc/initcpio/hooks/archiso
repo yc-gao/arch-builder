@@ -7,8 +7,14 @@ _resolve_dev() {
     local delay="${2:-5}"
 
     case "${device}" in
-        'UUID='* | 'LABEL='* | 'PARTUUID='* | 'PARTLABEL='*)
-            device="$(blkid -lt "${device}" -o device)"
+        'LABEL='*)
+            device="/dev/disk/by-label/${device#LABEL=}"
+            ;;
+        'UUID='*)
+            device="/dev/disk/by-uuid/${device#UUID=}"
+            ;;
+        'PARTUUID='*)
+            device="/dev/disk/by-partuuid/${device#PARTUUID=}"
             ;;
     esac
     poll_device "${device}" "${delay}"
