@@ -11,30 +11,28 @@ _resolve_dev() {
             device="$(blkid -lt "${device}" -o device)"
             ;;
     esac
-    if ! poll_device "${device}" "${delay}"; then
-        return 1
-    fi
-    return 0
+    poll_device "${device}" "${delay}"
 }
 
-# args: device mountpoint flags opts
+# args: device mountpoint flags opts delay
 _mnt_dev() {
     local dev="${1}"
     local mnt="${2}"
     local flg="${3}"
     local opts="${4}"
+    local delay="${5:-5}"
 
     msg ":: Mounting '${dev}' to '${mnt}'"
     if mountpoint -q "${mnt}"; then
-        error "ERROR: can't mount '${dev}' on '${mnt}'"
+        err "can't mount '${dev}' on '${mnt}'"
         return 1
     fi
-    if ! _resolve_dev "${dev}" "${rootdelay:-30}"; then
-        error "ERROR: '${device}' device did not show up after ${delay} seconds..."
+    if ! _resolve_dev "${dev}" "${delay}"; then
+        err "'${device}' device did not show up after ${delay} seconds..."
         return 1
     fi
     if ! mount --mkdir -o "${opts}" ${flg} "${dev}" "${mnt}"; then
-        error "ERROR: Failed to mount '${dev}'"
+        err "Failed to mount '${dev}'"
         return 1
     fi
     msg ":: Device '${dev}' mounted successfully."
@@ -60,15 +58,15 @@ run_hook() {
 archiso_mount_handler() {
     local newroot="${1}"
 
-    if ! _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults"; then
-        error "Falling back to interactive prompt"
+    if ! _mnt_dev "${archiso_device}" "/run/archiso/bootmnt" "-r" "defaults" "60"; then
+        err "Falling back to interactive prompt"
         launch_interactive_shell
     fi
 
     local fs_img="/run/archiso/bootmnt/linux/airootfs.erofs"
     if [ ! -f "${fs_img}" ]; then
-        error "ERROR: no root file system image found"
-        error "Falling back to interactive prompt"
+        err "no root file system image found"
+        err "Falling back to interactive prompt"
         launch_interactive_shell
     fi
 
@@ -88,8 +86,8 @@ archiso_mount_handler() {
     fi
 
     local img_loopdev="$(losetup --find --show --read-only -- "${fs_img}")"
-    if ! _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults"; then
-        error "Falling back to interactive prompt"
+    if ! _mnt_dev "${img_loopdev}" "/run/archiso/airootfs" "-r" "defaults" "60"; then
+        err "Falling back to interactive prompt"
         launch_interactive_shell
     fi
 
