@@ -36,3 +36,21 @@ iproute2
 polkit
 sudo
 zsh
+
+# desktop
+notification-daemon
+libnotify
+xorg
+xorg-xinit
+xorg-xrandr
+sddm
+bspwm
+sxhkd
+alacritty
+polybar
+feh
+rofi
+flameshot
+xss-lock
+i3lock
+

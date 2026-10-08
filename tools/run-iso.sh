@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+main() {
+    local iso="$1"
+    qemu-system-x86_64 \
+        -accel kvm \
+        -smp 8 \
+        -m 32G \
+        -nic user,hostfwd=tcp::60022-:22 \
+        -nic user \
+        -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2-ovmf/x64/OVMF_CODE.4m.fd \
+        -drive file="${iso}",format=raw,media=cdrom
+}
+
+main "$@"

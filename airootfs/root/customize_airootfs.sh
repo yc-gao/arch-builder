@@ -9,9 +9,15 @@ printf "${opt_user}:${opt_password}" | chpasswd
 usermod -aG wheel "${opt_user}"
 sed -E -i 's/#\s*(%wheel\s+ALL=\(ALL:ALL\)\s+ALL)/\1/' /etc/sudoers
 
+rm -rf "/home/${opt_user}"
+mv "/root/userhome" "/home/${opt_user}"
+chown -Rh "${opt_user}:${opt_user}" "/home/${opt_user}"
+chmod 755 "/home/${opt_user}/.config/bspwm/bspwmrc"
+
 sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist
 pacman-key --init
 pacman-key --populate
 
 systemctl enable NetworkManager
 systemctl enable sshd
+systemctl enable sddm
