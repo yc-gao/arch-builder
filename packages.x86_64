@@ -54,3 +54,10 @@ flameshot
 xss-lock
 i3lock
 
+# tools
+firefox
+wget
+curl
+neovim
+nmap
+lsof
