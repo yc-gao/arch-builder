@@ -1,0 +1,38 @@
+grub
+pv
+arch-install-scripts
+
+base
+base-devel
+linux
+linux-firmware
+
+# video driver
+nvidia-open
+xf86-video-amdgpu
+xf86-video-ati
+xf86-video-intel
+xf86-video-fbdev
+xf86-video-vesa
+
+# fs
+btrfs-progs
+dosfstools
+exfatprogs
+f2fs-tools
+e2fsprogs
+xfsprogs
+ntfs-3g
+lvm2
+mdadm
+udisks2
+
+# network
+networkmanager
+openssh
+iproute2
+
+# misc
+polkit
+sudo
+zsh

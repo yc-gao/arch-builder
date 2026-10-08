@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ISO
+        run: |
+          pacman-key --init
+          pacman-key --populate
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm grub libisoburn dosfstools mtools arch-install-scripts erofs-utils coreutils
+          ./tools/buildiso.sh -o archlinux.iso
+          md5sum archlinux.iso
+      - uses: actions/upload-artifact@v4
+        with:
+          name: archiso
+          path: archlinux.iso
+
