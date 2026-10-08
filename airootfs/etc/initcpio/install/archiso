@@ -14,6 +14,7 @@ build() {
     add_binary dmsetup
     add_binary losetup
     add_binary openssl
+    add_binary lsblk
 
     if command -v pv >/dev/null 2>&1; then
         add_binary pv
@@ -24,7 +25,6 @@ build() {
     add_udev_rule 60-cdrom_id.rules
     add_udev_rule 10-dm.rules
     add_udev_rule 95-dm-notify.rules
-    add_udev_rule /usr/lib/initcpio/udev/11-dm-initramfs.rules
 
     if [[ -v ARCHISO_GNUPG_FD ]]; then
         add_binary gpg
@@ -32,9 +32,10 @@ build() {
         gpg --homedir "$BUILDROOT/gpg" --import <&"$ARCHISO_GNUPG_FD"
     fi
     if [[ -v ARCHISO_TLS_FD ]]; then
-        cat <&"$ARCHISO_TLS_FD" >"${BUILDROOT}/codesign.crt"
+        cat <&"$ARCHISO_TLS_FD" | add_file - '/codesign.crt' 644
     fi
     if [[ -v ARCHISO_TLSCA_FD ]]; then
-        cat <&"$ARCHISO_TLSCA_FD" >"${BUILDROOT}/codesign_CA.crt"
+        cat <&"$ARCHISO_TLSCA_FD" | add_file - '/codesign_CA.crt' 644
     fi
 }
+
