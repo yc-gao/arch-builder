@@ -38,12 +38,17 @@ sudo
 zsh
 
 # desktop
-notification-daemon
-libnotify
 xorg
 xorg-xinit
 xorg-xrandr
 sddm
+
+xss-lock
+i3lock
+
+notification-daemon
+libnotify
+
 bspwm
 sxhkd
 alacritty
@@ -51,8 +56,10 @@ polybar
 feh
 rofi
 flameshot
-xss-lock
-i3lock
+
+ueberzug
+ffmpegthumbnailer
+ranger
 
 # tools
 firefox
