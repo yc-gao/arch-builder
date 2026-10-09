@@ -47,7 +47,7 @@ make_rootfs() {
 
 make_esp() {
     echo "Generating ESP image..."
-    cat grub.embed.cfg \
+    cat grub/grub.embed.cfg \
         | sed "s|%ARCHISO_UUID%|${fs_uuid}|g" \
         | sed "s|%ARCHISO_LABEL%|${fs_label}|g" \
         >"${tmp_dir}/grub.cfg"
@@ -68,6 +68,12 @@ make_esp() {
 
 make_iso() {
     echo "Generating ISO image..."
+
+    mkdir -p "${isofs_dir}/boot/grub"
+    cat grub/grub.cfg \
+        | sed "s|%ARCHISO_UUID%|${fs_uuid}|g" \
+        | sed "s|%ARCHISO_LABEL%|${fs_label}|g" \
+        >"${isofs_dir}/boot/grub/grub.cfg"
 
     install -D -m 0644 -- /dev/null "${isofs_dir}/boot/${fs_uuid}.uuid"
     install -D -m 0644 -t "${isofs_dir}/linux" "${rootfs_dir}/boot/initramfs-"*".img" "${rootfs_dir}/boot/vmlinuz-"*
