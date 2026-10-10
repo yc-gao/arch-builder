@@ -36,6 +36,7 @@ iproute2
 polkit
 sudo
 zsh
+git
 
 # desktop
 xorg
@@ -66,5 +67,10 @@ firefox
 wget
 curl
 neovim
+ripgrep-all
+ctags
+openbsd-netcat
+jq
 nmap
+rsync
 lsof
