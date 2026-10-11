@@ -47,6 +47,10 @@ sddm
 xss-lock
 i3lock
 
+fcitx5-im
+fcitx5-configtool
+fcitx5-chinese-addons
+
 notification-daemon
 libnotify
 
@@ -62,11 +66,26 @@ ueberzug
 ffmpegthumbnailer
 ranger
 
+adobe-source-han-serif-cn-fonts
+adobe-source-han-sans-cn-fonts
+wqy-microhei
+wqy-zenhei
+
+xdotool
+xclip
+
 # tools
 firefox
+ffmpeg
+imagemagick
+vlc
+imv
+
 wget
 curl
 neovim
+unzip
+
 ripgrep-all
 ctags
 openbsd-netcat
