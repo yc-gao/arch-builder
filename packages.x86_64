@@ -23,9 +23,9 @@ f2fs-tools
 e2fsprogs
 xfsprogs
 ntfs-3g
+cifs-utils
 lvm2
 mdadm
-udisks2
 
 # network
 networkmanager
@@ -40,7 +40,6 @@ git
 
 # desktop
 xorg
-xorg-xinit
 xorg-xrandr
 sddm
 
@@ -73,13 +72,6 @@ wqy-zenhei
 xdotool
 xclip
 
-# tools
-firefox
-ffmpeg
-imagemagick
-vlc
-imv
-
 wget
 curl
 neovim
@@ -92,3 +84,10 @@ jq
 nmap
 rsync
 lsof
+
+# tools
+firefox
+ffmpeg
+imagemagick
+vlc
+imv
